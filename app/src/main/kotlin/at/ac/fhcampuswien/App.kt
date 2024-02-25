@@ -3,10 +3,22 @@
  */
 package at.ac.fhcampuswien
 
+import java.util.Scanner
+import kotlin.math.abs
+import kotlin.math.log10
+
 class App {
     // Game logic for a number guessing game
     fun playNumberGame(digitsToGuess: Int = 4) {
         //TODO: build a menu which calls the functions and works with the return values
+        val genNum = generateRandomNonRepeatingNumber(digitsToGuess)
+        val reader = Scanner(System.`in`)
+        do {
+            println("Your Guess: ")
+            val guess = reader.nextInt()
+            println( checkUserInputAgainstGeneratedNumber(guess, genNum))
+        } while (guess != genNum)
+        println("Congratulations! The generated Number was: $genNum")
     }
 
     /**
@@ -24,8 +36,10 @@ class App {
      * @throws IllegalArgumentException if the length is more than 9 or less than 1.
      */
     val generateRandomNonRepeatingNumber: (Int) -> Int = { length ->
-        //TODO implement the function
-        0   // return value is a placeholder
+        if (length > 9)
+            throw IllegalArgumentException("Cant be longer than 9 digits")
+        val numbers = (1..9).shuffled().take(length)
+        numbers.joinToString("").toInt()
     }
 
     /**
@@ -45,12 +59,36 @@ class App {
      * @throws IllegalArgumentException if the inputs do not have the same number of digits.
      */
     val checkUserInputAgainstGeneratedNumber: (Int, Int) -> CompareResult = { input, generatedNumber ->
-        //TODO implement the function
-        CompareResult(0, 0)   // return value is a placeholder
+        if (input.length() != generatedNumber.length())
+            throw IllegalArgumentException("Wrong input length")
+        var n = 0
+        var m = 0
+        val inDig = input.toString().toCharArray()
+        var genDig = generatedNumber.toString().toCharArray()
+        for (i in inDig.indices) {
+            if (inDig[i] == genDig[i]) {
+                m++
+            }
+        }
+        inDig.forEach { digit ->
+            if (digit in genDig) {
+                n++
+                genDig = genDig.filter { it != digit }.toCharArray()
+            }
+        }
+        CompareResult(n, m)   // return value is a placeholder
     }
 }
 
+fun Int.length() = when(this) {
+    0 -> 1
+    else -> log10(abs(toDouble())).toInt() + 1
+}
 fun main() {
-    println("Hello World!")
-    // TODO: call the App.playNumberGame function with and without default arguments
+    println("Welcome to NumberGuesser")
+    println("Enter the length of numbers you want to guess: ")
+    val reader = Scanner(System.`in`)
+    val length = reader.nextInt()
+    val app = App()
+    app.playNumberGame(length)
 }
